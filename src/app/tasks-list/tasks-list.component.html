@@ -1,0 +1,104 @@
+<div class="d-flex justify-content-center align-items-center">
+    <div class="container text-center mt-4">
+      
+        <button type="button" class="btn bg-info text-white" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="bi bi-plus"></i> Añadir Tarea
+        </button>          
+
+        <h2 class="mt-4">Lista de Tareas</h2>
+        <hr class="custom-line">    
+
+        <div class="list-group">
+            <div class="list-group" *ngFor="let tarea of pagedResponse.data">
+                <div class="row justify-content-center"> <!-- Añadido el "justify-content-center" para centrar el contenido de la fila -->
+                    <div class="col-md-8 text-center" *ngIf="editingTaskId !== tarea.id; else editingTemplate">
+                        <h4>{{ tarea.title }}</h4>
+                        <p>{{ tarea.descripcion }}</p>
+                        <div class="d-flex justify-content-center mb-2"> <!-- Usamos flex para centrar contenidos -->
+                            <div class="form-check form-switch"> <!-- Contenedor del switch y label -->
+                                <label class="form-check-label mr-2" for="flexSwitchCheckDefault">Completado</label>
+                                <input class="form-check-input" (change)="editTask(tarea)" type="checkbox" id="flexSwitchCheckDefault" [(ngModel)]="tarea.completado">
+                            </div>
+                        </div>                              
+                        <p class="text-muted fs-9" style="margin-bottom: 0;">Fecha creación: {{ tarea.fechaCreacion | dateFormat:'shortDate'}}</p>
+                        <p class="text-muted fs-9">Hora creación: {{ tarea.fechaCreacion | dateFormat:'timeDate'}}</p>
+                    </div>               
+
+                    <ng-template #editingTemplate>
+                        <div class="col-md-8 text-center">
+                            <h4>{{ tarea.title }}</h4>
+                            <input type="text" class="form-control mb-2" [(ngModel)]="tarea.title">
+                            <input type="text" class="form-control mb-2" [(ngModel)]="tarea.descripcion">
+                        </div>
+                    </ng-template>
+
+                    <div class="col-md-8 d-flex justify-content-center button-group mt-2"> <!-- Envuelto en "col-md-8" y "d-flex justify-content-center" para centrar botones -->
+                        <button class="btn btn-primary custom-margin" (click)="startEditing(tarea)" *ngIf="editingTaskId !== tarea.id" [disabled]="tarea.completado">Editar</button>
+                        <button class="btn btn-danger" (click)="deleteTask(tarea.id!)" *ngIf="tarea.id && editingTaskId !== tarea.id" [disabled]="tarea.completado">Eliminar</button>
+                        <button class="btn btn-success custom-margin" (click)="editTask(tarea)" *ngIf="editingTaskId === tarea.id">Guardar</button>
+                        <button class="btn btn-secondary" (click)="cancel()" *ngIf="editingTaskId === tarea.id">Cancelar</button>
+                    </div>
+                </div>
+                <hr class="my-3 custom-line"> <!-- Separador entre las tareas -->
+            </div>
+        </div>
+        <!-- Inicio del componente de paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="pagedResponse.currentPage === 1">
+                    <a class="page-link" (click)="cambiarPagina(pagedResponse.currentPage - 1)" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item" 
+                    *ngFor="let pagina of paginas" 
+                    [class.active]="pagina === pagedResponse.currentPage">
+                    <a class="page-link" (click)="cambiarPagina(pagina)">{{pagina}}</a>
+                </li>
+                <li class="page-item" [class.disabled]="pagedResponse.currentPage === pagedResponse.totalPages">
+                    <a class="page-link" (click)="cambiarPagina(pagedResponse.currentPage + 1)" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>        
+        <!-- Fin del componente de paginación -->
+    </div>
+</div>
+
+<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addTaskModalLabel">Añadir Tarea</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form [formGroup]="taskForm" (ngSubmit)="agregarTarea()" novalidate>
+            <div class="modal-body">          
+                <div class="mb-3">
+                  <input formControlName="title" type="text" class="form-control mb-2" placeholder="Nombre de la Tarea" required>
+                  <div *ngIf="taskForm && taskForm.controls && taskForm.controls['title'].invalid && taskForm.controls['title'].touched" class="text-danger">
+                    Nombre de la tarea es obligatorio
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <input formControlName="descripcion" type="text" class="form-control" placeholder="Descripción de la Tarea" required>
+                  <div *ngIf="taskForm && taskForm.controls && taskForm.controls['descripcion'].invalid && taskForm.controls['descripcion'].touched" class="text-danger">
+                    Descipción de la tarea es obligatorio
+                  </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-success" [disabled]="!taskForm.valid" data-bs-dismiss="modal">Guardar</button>
+            </div>
+        </form>
+      </div>
+    </div>
+</div>
+
+  
+
+
